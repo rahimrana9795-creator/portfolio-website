@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages | MyWebsite</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body>
+<div class="sidebar">
+    <a class="site-logo" href="{% url 'home' %}" aria-label="Rahim's Portfolio home"><img src="{% static 'images/code-with-rahim-logo.png' %}" alt="Code With Rahim"></a>
+    <ul>
+        <li><a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{% url 'profile' %}"><i class="fas fa-user"></i> Profile</a></li>
+        <li><a href="{% url 'projects' %}"><i class="fas fa-briefcase"></i> Projects</a></li>
+        <li><a href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a></li>
+        <li class="active"><a href="{% url 'messages' %}"><i class="fas fa-envelope"></i> Messages</a></li>
+        <li><a href="{% url 'settings' %}"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="{% url 'admin:index' %}"><i class="fas fa-shield-alt"></i> Admin Panel</a></li>
+    </ul>
+</div>
+
+<div class="main">
+    <div class="search-box">
+        <input type="text" placeholder="Search...">
+        <i class="fas fa-search"></i>
+    </div>
+    <header>
+        <h1>Messages</h1>
+        <div class="user">
+            <img src="{% static 'images/rahim-profile.jpg' %}" alt="Portrait of Rahim">
+            <span>Contact inbox</span>
+        </div>
+    </header>
+
+    <section class="cards">
+        <div class="card"><h2>{{ messages_list|length }}</h2><p>Total saved messages</p></div>
+        <div class="card"><h2>Email ready</h2><p>Every submitted form is saved here and sent to your inbox.</p></div>
+    </section>
+
+    <section class="table-section">
+        <h2>Recent contact requests</h2>
+        <table>
+            <thead><tr><th>Sender</th><th>Email</th><th>Subject</th><th>Date</th></tr></thead>
+            <tbody>
+                {% for message in messages_list %}
+                    <tr>
+                        <td>{{ message.name }}</td>
+                        <td>{{ message.email }}</td>
+                        <td>{{ message.subject }}</td>
+                        <td>{{ message.created }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4">No contact messages yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<script src="{% static 'css/js/dashboard.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics | MyWebsite</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body>
+<div class="sidebar">
+    <a class="site-logo" href="{% url 'home' %}" aria-label="Rahim's Portfolio home"><img src="{% static 'images/code-with-rahim-logo.png' %}" alt="Code With Rahim"></a>
+    <ul>
+        <li><a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{% url 'profile' %}"><i class="fas fa-user"></i> Profile</a></li>
+        <li class="active"><a href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a></li>
+        <li><a href="{% url 'messages' %}"><i class="fas fa-envelope"></i> Messages</a></li>
+        <li><a href="{% url 'settings' %}"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="{% url 'admin:index' %}"><i class="fas fa-shield-alt"></i> Admin Panel</a></li>
+    </ul>
+</div>
+<div class="main">
+    <div class="search-box">
+        <input type="text" placeholder="Search...">
+        <i class="fas fa-search"></i>
+    </div>
+    <header>
+        <h1>Analytics</h1>
+        <div class="user">
+            <img src="https://i.pravatar.cc/100" alt="User avatar">
+            <span>Welcome, User</span>
+        </div>
+    </header>
+    <section class="cards">
+        <div class="card"><h2>Traffic</h2><p>See trends in visits and engagement.</p></div>
+        <div class="card"><h2>Conversion</h2><p>Measure how users are interacting with your dashboard.</p></div>
+        <div class="card"><h2>Revenue</h2><p>Track revenue growth and financial metrics.</p></div>
+    </section>
+    <section class="table-section">
+        <h2>Weekly analytics</h2>
+        <table>
+            <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+            <tbody>
+                <tr><td>Page Views</td><td>12,340</td></tr>
+                <tr><td>New Users</td><td>750</td></tr>
+                <tr><td>Engagement</td><td>68%</td></tr>
+                <tr><td>Revenue</td><td>$9,500</td></tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+<script src="{% static 'css/js/dashboard.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site_content.site_name|default:"Rahim's Portfolio" }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body>
+<header>
+    <nav class="navbar">
+        <a class="site-logo" href="{% url 'home' %}" aria-label="Rahim's Portfolio home">
+            <img src="{% static 'images/code-with-rahim-logo.png' %}" alt="Code With Rahim">
+        </a>
+        <button class="menu-btn" type="button" aria-label="Toggle navigation">Menu</button>
+        <ul class="nav-links">
+            <li><a href="#" class="active">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="{% url 'projects' %}">Projects</a></li>
+            {% for nav_page in nav_pages %}
+                <li><a href="/{{ nav_page.route_path }}/">{{ nav_page.title }}</a></li>
+            {% endfor %}
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+</header>
+
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-copy">
+            <h1>{{ site_content.hero_title|default:"Hi, I'm Rahim." }}</h1>
+            <p>{{ site_content.hero_text|default:"I design and build modern web applications, portfolio sites, and digital experiences that help brands stand out online." }}</p>
+            <div class="hero-buttons">
+                <a href="{% url 'projects' %}" class="btn">View Projects</a>
+                <a href="#contact" class="btn-secondary">Contact Me</a>
+                {% if site_content.resume_file %}
+                    <a href="{{ site_content.resume_file.url }}" class="btn-secondary" download>Download Resume</a>
+                {% else %}
+                    <a href="{% url 'resume' %}" class="btn-secondary">View Resume</a>
+                {% endif %}
+            </div>
+        </div>
+        <img class="hero-profile-image" src="{% static 'images/rahim-profile.jpg' %}" alt="Portrait of Rahim">
+    </div>
+</section>
+
+<section id="projects" class="features">
+    <h2>{{ site_content.projects_title|default:"Featured Projects" }}</h2>
+    <div class="feature-container">
+        {% for project in projects %}
+            <article class="card">
+                {% if project.thumbnail_url %}
+                    <img src="{{ project.thumbnail_url }}" alt="{{ project.title }}" style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin-bottom:16px;">
+                {% endif %}
+                <i class="fas fa-briefcase"></i>
+                <h3>{{ project.title }}</h3>
+                <p>{{ project.description }}</p>
+                {% if project.tech %}
+                    <p><strong>Tech:</strong> {{ project.tech }}</p>
+                {% endif %}
+                <p><strong>Status:</strong> {{ project.status }}</p>
+            </article>
+        {% empty %}
+            <div class="card">
+                <h3>No projects yet</h3>
+                <p>Add your projects in the admin panel and they will appear here automatically.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section id="about" class="about">
+    <div class="about-text">
+        <h2>{{ site_content.about_title|default:"About Me" }}</h2>
+        <p>{{ site_content.about_text|default:"I'm a full-stack web developer with a passion for crafting beautiful interfaces and building robust backend systems. I love turning ideas into polished digital products that users enjoy." }}</p>
+        <a href="{% url 'projects' %}" class="btn">See My Work</a>
+    </div>
+    <div class="about-image">
+        <img src="{% static 'images/rahim-profile.jpg' %}" alt="Portrait of Rahim">
+    </div>
+</section>
+
+<section id="services" class="services">
+    <h2>{{ site_content.services_title|default:"What I Do" }}</h2>
+    <div class="service-container">
+        {% for service in services %}
+            <div class="service-box">
+                {% if service.icon %}
+                    <i class="{{ service.icon }}"></i>
+                {% else %}
+                    <i class="fas fa-code"></i>
+                {% endif %}
+                <h3>{{ service.title }}</h3>
+                <p>{{ service.description }}</p>
+            </div>
+        {% empty %}
+            <div class="service-box">
+                <i class="fas fa-code"></i>
+                <h3>Web Development</h3>
+                <p>Building responsive, accessible web applications using Django, HTML, CSS, and JavaScript.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section id="contact" class="contact">
+    <h2>{{ site_content.contact_title|default:"Contact Me" }}</h2>
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <form action="{% url 'contact' %}" method="post">
+        {% csrf_token %}
+        <div class="contact-form-fields">
+            {% for field in contact_form %}
+                <div class="input-box">
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="message error">{{ field.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn">Send Message</button>
+    </form>
+</section>
+
+<footer>
+    <p>{{ site_content.footer_text|default:"Copyright 2026 Rahim Portfolio. All Rights Reserved." }}</p>
+    <div class="social-icons">
+        <a href="#"><i class="fab fa-facebook"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-linkedin"></i></a>
+        <a href="#"><i class="fab fa-github"></i></a>
+    </div>
+</footer>
+<script src="{% static 'css/js/script.js' %}"></script>
+</body>
+</html>

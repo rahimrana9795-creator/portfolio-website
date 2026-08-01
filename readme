@@ -1,0 +1,43 @@
+website/
+│
+├── webvenv/                 # Virtual Environment
+│
+├── manage.py
+│
+├── mw/                      # Project Folder
+│   │
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   └── wsgi.py
+│
+├── myproject/               # Django App
+│   │
+│   ├── migrations/
+│   │
+│   ├── templates/
+│   │      ├── home.html
+│   │      ├── login.html
+│   │      ├── signup.html
+│   │      └── dashboard.html
+│   │
+│   ├── static/
+│   │      ├── css/
+│   │      │      └── style.css
+│   │      │
+│   │      ├── js/
+│   │      │      ├── script.js
+│   │      │      └── dashboard.js
+│   │      │
+│   │      └── images/
+│   │
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── views.py
+│   └── urls.py
+│
+└── db.sqlite3

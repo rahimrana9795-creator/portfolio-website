@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site_content.profile_page_title|default:"About Me" }} | {{ site_content.site_name|default:"Rahim Portfolio" }}</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body>
+<div class="sidebar">
+    <a class="site-logo" href="{% url 'home' %}" aria-label="Rahim's Portfolio home"><img src="{% static 'images/code-with-rahim-logo.png' %}" alt="Code With Rahim"></a>
+    <ul>
+        <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+        <li class="active"><a href="{% url 'profile' %}"><i class="fas fa-user"></i> About</a></li>
+        <li><a href="{% url 'projects' %}"><i class="fas fa-briefcase"></i> Projects</a></li>
+        <li><a href="{% url 'resume' %}"><i class="fas fa-file-alt"></i> Resume</a></li>
+        <li><a href="{% url 'admin:index' %}"><i class="fas fa-shield-alt"></i> Admin Panel</a></li>
+    </ul>
+</div>
+
+<div class="main">
+    <header>
+        <h1>{{ site_content.profile_page_title|default:"About Me" }}</h1>
+        <div class="user">
+            <img src="{% static 'images/rahim-profile.jpg' %}" alt="Portrait of Rahim">
+            <span>{{ site_content.site_name|default:"Rahim" }}</span>
+        </div>
+    </header>
+
+    <section class="cards">
+        <div class="card">
+            <h2>{{ site_content.profile_intro_title|default:"Who I Am" }}</h2>
+            <p>{{ site_content.profile_intro_text|default:"I am a passionate web developer skilled in Python, Django, HTML, CSS, and JavaScript." }}</p>
+        </div>
+        <div class="card">
+            <h2>{{ site_content.profile_work_title|default:"What I Do" }}</h2>
+            <p>{{ site_content.profile_work_text|default:"I build portfolio websites, admin dashboards, and web apps with authentication, responsive design, and modern UX." }}</p>
+        </div>
+    </section>
+
+    <section class="table-section">
+        <h2>{{ site_content.profile_skills_title|default:"Skills" }}</h2>
+        <table>
+            <thead><tr><th>Skill</th><th>Level</th></tr></thead>
+            <tbody>
+                {% for skill in skills %}
+                    <tr><td>{{ skill.name }}</td><td>{{ skill.level|default:"-" }}</td></tr>
+                {% empty %}
+                    <tr><td>Django</td><td>Advanced</td></tr>
+                    <tr><td>Frontend UI</td><td>Advanced</td></tr>
+                    <tr><td>Python</td><td>Advanced</td></tr>
+                    <tr><td>Responsive Design</td><td>Advanced</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<script src="{% static 'css/js/dashboard.js' %}"></script>
+</body>
+</html>

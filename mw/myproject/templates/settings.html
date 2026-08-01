@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | MyWebsite</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+<body>
+<div class="sidebar">
+    <a class="site-logo" href="{% url 'home' %}" aria-label="Rahim's Portfolio home"><img src="{% static 'images/code-with-rahim-logo.png' %}" alt="Code With Rahim"></a>
+    <ul>
+        <li><a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{% url 'profile' %}"><i class="fas fa-user"></i> Profile</a></li>
+        <li><a href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a></li>
+        <li><a href="{% url 'messages' %}"><i class="fas fa-envelope"></i> Messages</a></li>
+        <li class="active"><a href="{% url 'settings' %}"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="{% url 'admin:index' %}"><i class="fas fa-shield-alt"></i> Admin Panel</a></li>
+    </ul>
+</div>
+<div class="main">
+    <div class="search-box">
+        <input type="text" placeholder="Search...">
+        <i class="fas fa-search"></i>
+    </div>
+    <header>
+        <h1>Settings</h1>
+        <div class="user">
+            <img src="https://i.pravatar.cc/100" alt="User avatar">
+            <span>Welcome, User</span>
+        </div>
+    </header>
+    <section class="cards">
+        <div class="card"><h2>Account Settings</h2><p>Control your account preferences, privacy, and profile options.</p></div>
+        <div class="card"><h2>Security</h2><p>Update your password, enable 2FA, and manage connected devices.</p></div>
+    </section>
+    <section class="table-section">
+        <h2>Settings overview</h2>
+        <table>
+            <thead><tr><th>Setting</th><th>Status</th></tr></thead>
+            <tbody>
+                <tr><td>Email notifications</td><td>Enabled</td></tr>
+                <tr><td>Two-factor authentication</td><td>Disabled</td></tr>
+                <tr><td>Account visibility</td><td>Private</td></tr>
+                <tr><td>Language</td><td>English</td></tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+<script src="{% static 'css/js/dashboard.js' %}"></script>
+</body>
+</html>

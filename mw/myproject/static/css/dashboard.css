@@ -1,0 +1,425 @@
+/* ==========================================
+   GOOGLE FONT
+========================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* ==========================================
+   RESET
+========================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    display:flex;
+    min-height:100vh;
+    background:#f4f7fc;
+}
+
+/* ==========================================
+   SIDEBAR
+========================================== */
+
+.sidebar{
+    width:260px;
+    background:#1e293b;
+    color:#fff;
+    position:fixed;
+    height:100%;
+    padding:25px;
+    transition:0.3s;
+}
+
+.logo{
+    font-size:28px;
+    font-weight:700;
+    text-align:center;
+    margin-bottom:40px;
+    color:#38bdf8;
+}
+
+.sidebar ul{
+    list-style:none;
+}
+
+.sidebar ul li{
+    margin:12px 0;
+}
+
+.sidebar ul li a{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    padding:15px;
+    color:#fff;
+    text-decoration:none;
+    border-radius:10px;
+    transition:0.3s;
+}
+
+.sidebar ul li a:hover,
+.sidebar ul li.active a{
+    background:#2563eb;
+}
+
+.sidebar i{
+    width:20px;
+    text-align:center;
+}
+
+/* ==========================================
+   MAIN CONTENT
+========================================== */
+
+.main{
+    margin-left:260px;
+    width:calc(100% - 260px);
+    padding:30px;
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:35px;
+}
+
+.user{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.user img{
+    width:50px;
+    height:50px;
+    border-radius:50%;
+}
+
+/* ==========================================
+   CARDS
+========================================== */
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:25px;
+    margin-bottom:40px;
+}
+
+.card{
+    background:#fff;
+    border-radius:15px;
+    padding:25px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-8px);
+}
+
+.card h2{
+    color:#2563eb;
+    font-size:32px;
+}
+
+.card p{
+    margin-top:10px;
+    color:#666;
+}
+
+/* ==========================================
+   TABLE
+========================================== */
+
+.table-section{
+    background:#fff;
+    border-radius:15px;
+    padding:25px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+.table-section h2{
+    margin-bottom:20px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+table th{
+    background:#2563eb;
+    color:#fff;
+    padding:15px;
+    text-align:left;
+}
+
+table td{
+    padding:15px;
+    border-bottom:1px solid #ddd;
+}
+
+table tr:hover{
+    background:#f1f5f9;
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE
+========================================== */
+
+@media(max-width:900px){
+
+    .sidebar{
+        width:80px;
+    }
+
+    .logo{
+        font-size:19px;
+    }
+
+    .sidebar ul li a{
+        justify-content:center;
+    }
+
+    .sidebar ul li a span{
+        display:none;
+    }
+
+    .main{
+        margin-left:80px;
+        width:calc(100% - 80px);
+    }
+
+}
+
+@media(max-width:700px){
+
+    body{
+        flex-direction:column;
+    }
+
+    .sidebar{
+        position:relative;
+        width:100%;
+        height:auto;
+    }
+
+    .main{
+        margin-left:0;
+        width:100%;
+    }
+
+    header{
+        flex-direction:column;
+        gap:20px;
+    }
+
+}
+/* ==========================
+   SEARCH BOX
+========================== */
+
+.search-box{
+
+    position:relative;
+
+}
+
+.search-box input{
+
+    width:250px;
+
+    padding:12px 40px 12px 15px;
+
+    border:none;
+
+    outline:none;
+
+    border-radius:30px;
+
+    background:#fff;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.1);
+
+}
+
+.search-box i{
+
+    position:absolute;
+
+    right:15px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    color:#666;
+
+}
+
+/* ==========================
+   LIVE DATE
+========================== */
+
+#liveDate{
+
+    font-size:14px;
+
+    color:#555;
+
+    margin-left:auto;
+
+    margin-right:20px;
+
+}
+
+.site-logo{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:70px;
+    margin-bottom:18px;
+}
+
+.site-logo img{
+    width:62px;
+    height:62px;
+    object-fit:contain;
+    border-radius:50%;
+}
+
+.sidebar .site-logo img{
+    width:58px;
+    height:58px;
+    display:block;
+    object-fit:cover;
+    border-radius:50%;
+    box-shadow:0 8px 20px rgba(0,0,0,.22);
+}
+
+.user img{
+    object-fit:cover;
+    object-position:center top;
+    border:2px solid #38bdf8;
+}
+
+@media(max-width:900px){
+    .search-box input{
+        width:100%;
+        max-width:420px;
+    }
+}
+
+@media(max-width:768px){
+    .sidebar{
+        position:sticky;
+        top:0;
+        width:100%;
+        height:auto;
+        z-index:1000;
+        padding:16px 18px;
+        border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .sidebar .site-logo{
+        justify-content:flex-start;
+        height:auto;
+        margin-bottom:12px;
+    }
+
+    .sidebar ul{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+    }
+
+    .sidebar ul li{
+        margin:0;
+        flex:1 1 140px;
+    }
+
+    .sidebar ul li a{
+        justify-content:flex-start;
+        padding:12px 14px;
+    }
+
+    .main{
+        margin-left:0;
+        width:100%;
+        padding:22px 16px 32px;
+    }
+
+    header{
+        align-items:flex-start;
+    }
+
+    .cards{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .table-section{
+        padding:18px;
+        overflow-x:auto;
+    }
+
+    table{
+        min-width:560px;
+    }
+
+    .search-box{
+        width:100%;
+    }
+
+    .search-box input{
+        width:100%;
+        max-width:none;
+    }
+
+    #liveDate{
+        margin-left:0;
+        margin-right:0;
+    }
+}
+
+@media(max-width:560px){
+    .sidebar ul li{
+        flex:1 1 100%;
+    }
+
+    .cards{
+        grid-template-columns:1fr;
+    }
+
+    header{
+        gap:12px;
+    }
+
+    .user{
+        width:100%;
+        justify-content:flex-start;
+    }
+
+    .card h2{
+        font-size:28px;
+    }
+
+    .card,
+    .table-section{
+        border-radius:12px;
+    }
+
+    table{
+        min-width:480px;
+    }
+}
