@@ -36,7 +36,7 @@ def env_list(name, default=''):
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-^2tc6vqzl9tjaf6avrd+h8va4t@j^jswn1a84o%-t_!rs#h7=*')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env_bool('DEBUG', 'True')
+DEBUG = False
 
 if os.getenv('VERCEL'):
     ALLOWED_HOSTS = ['*']
