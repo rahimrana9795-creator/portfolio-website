@@ -8,8 +8,12 @@ services:
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: mw.settings
+      - key: USE_POSTGRES
+        value: "True"
       - key: DATABASE_URL
-        value: postgres://postgres:password@host:5432/postgres
+        value: postgresql://postgres:password@host:5432/postgres
+      - key: DB_SSLMODE
+        value: require
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG

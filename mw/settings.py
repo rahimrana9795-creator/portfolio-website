@@ -106,18 +106,32 @@ WSGI_APPLICATION = 'mw.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-# Force SQLite for local development so runserver does not fail when the Supabase host is unreachable.
-# For deployment, you can switch this back to Postgres by setting USE_SUPABASE=True and providing a valid DATABASE_URL.
-USE_SUPABASE = env_bool('USE_SUPABASE', 'False')
+USE_POSTGRES = env_bool('USE_POSTGRES', 'True' if os.getenv('DATABASE_URL') or os.getenv('DB_HOST') else 'False')
 DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
+DB_SSLMODE = os.getenv('DB_SSLMODE', 'disable').strip().lower()
 
-if USE_SUPABASE and DATABASE_URL and DATABASE_URL.startswith('postgres'):
+if DATABASE_URL and DATABASE_URL.startswith(('postgres://', 'postgresql://')):
+    ssl_require = DB_SSLMODE in {'require', 'true', '1', 'yes', 'on'}
     DATABASES = {
         'default': dj_database_url.parse(
             DATABASE_URL,
             conn_max_age=600,
-            ssl_require=True,
+            ssl_require=ssl_require,
         )
+    }
+elif USE_POSTGRES:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'portfolio_db'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', '0099'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            'OPTIONS': {
+                'sslmode': DB_SSLMODE,
+            },
+        }
     }
 else:
     sqlite_path = BASE_DIR / 'db.sqlite3'
