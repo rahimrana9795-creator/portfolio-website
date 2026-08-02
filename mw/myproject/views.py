@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.core.mail import EmailMessage
+from django.db import OperationalError
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
@@ -13,17 +14,29 @@ logger = logging.getLogger(__name__)
 
 
 def get_site_content():
-    return SiteContent.objects.first() or SiteContent()
+    try:
+        return SiteContent.objects.first() or SiteContent()
+    except Exception:
+        return SiteContent()
 
 
 def get_nav_pages():
-    return Page.objects.filter(is_published=True, show_in_nav=True).order_by('order', 'title')
+    try:
+        return Page.objects.filter(is_published=True, show_in_nav=True).order_by('order', 'title')
+    except Exception:
+        return Page.objects.none()
 
 
 def home(request):
     site_content = get_site_content()
-    featured_projects = Project.objects.order_by('order', 'title')[:6]
-    services = Service.objects.order_by('order')
+    try:
+        featured_projects = Project.objects.order_by('order', 'title')[:6]
+    except Exception:
+        featured_projects = []
+    try:
+        services = Service.objects.order_by('order')
+    except Exception:
+        services = []
     contact_form = ContactMessageForm()
     return render(request, 'index.html', {
         'projects': featured_projects,
@@ -91,8 +104,14 @@ def contact(request):
             )
         return redirect('home')
 
-    projects = Project.objects.order_by('order', 'title')[:6]
-    services = Service.objects.order_by('order')
+    try:
+        projects = Project.objects.order_by('order', 'title')[:6]
+    except Exception:
+        projects = []
+    try:
+        services = Service.objects.order_by('order')
+    except Exception:
+        services = []
     return render(request, 'index.html', {
         'projects': projects,
         'services': services,
@@ -113,14 +132,21 @@ def dashboard(request):
 
 @user_passes_test(admin_required, login_url='/admin/login/')
 def profile(request):
+    try:
+        skills = Skill.objects.order_by('order')
+    except Exception:
+        skills = []
     return render(request, 'profile.html', {
         'site_content': get_site_content(),
-        'skills': Skill.objects.order_by('order'),
+        'skills': skills,
     })
 
 
 def projects(request):
-    projects = Project.objects.order_by('order', 'title')
+    try:
+        projects = Project.objects.order_by('order', 'title')
+    except Exception:
+        projects = []
     return render(request, 'projects.html', {
         'projects': projects,
         'site_content': get_site_content(),
@@ -134,8 +160,14 @@ def analytics(request):
 
 
 def resume(request):
-    experiences = Experience.objects.order_by('order')
-    skills = Skill.objects.order_by('order')
+    try:
+        experiences = Experience.objects.order_by('order')
+    except Exception:
+        experiences = []
+    try:
+        skills = Skill.objects.order_by('order')
+    except Exception:
+        skills = []
     return render(request, 'resume.html', {
         'experiences': experiences,
         'skills': skills,
@@ -146,7 +178,10 @@ def resume(request):
 
 @user_passes_test(admin_required, login_url='/admin/login/')
 def messages_page(request):
-    messages_list = ContactMessage.objects.order_by('-created')
+    try:
+        messages_list = ContactMessage.objects.order_by('-created')
+    except Exception:
+        messages_list = []
     return render(request, 'messages.html', {'messages_list': messages_list})
 
 
@@ -156,7 +191,10 @@ def settings_page(request):
 
 
 def page_detail(request, url_path):
-    page = Page.objects.filter(route_path=url_path.strip('/').lower(), is_published=True).first()
+    try:
+        page = Page.objects.filter(route_path=url_path.strip('/').lower(), is_published=True).first()
+    except Exception:
+        page = None
     if page is None:
         from django.http import Http404
         raise Http404('Page not found')

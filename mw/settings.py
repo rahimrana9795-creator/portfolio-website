@@ -120,10 +120,13 @@ if USE_SUPABASE and DATABASE_URL and DATABASE_URL.startswith('postgres'):
         )
     }
 else:
+    sqlite_path = BASE_DIR / 'db.sqlite3'
+    if os.getenv('VERCEL'):
+        sqlite_path = '/tmp/db.sqlite3'
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': sqlite_path,
         }
     }
 
