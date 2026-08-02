@@ -58,6 +58,10 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         if (navLinks) {
             navLinks.classList.remove("show");
         }
+        if (menuBtn) {
+            menuBtn.classList.remove("active");
+            menuBtn.setAttribute("aria-expanded", "false");
+        }
     });
 });
 

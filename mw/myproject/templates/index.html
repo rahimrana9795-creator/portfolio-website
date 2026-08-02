@@ -14,8 +14,8 @@
         <a class="site-logo" href="{% url 'home' %}" aria-label="Rahim's Portfolio home">
             <img src="{% static 'images/code-with-rahim-logo.png' %}" alt="Code With Rahim">
         </a>
-        <button class="menu-btn" type="button" aria-label="Toggle navigation">Menu</button>
-        <ul class="nav-links">
+        <button class="menu-btn" type="button" aria-label="Toggle navigation" aria-controls="site-nav" aria-expanded="false">Menu</button>
+        <ul id="site-nav" class="nav-links">
             <li><a href="#" class="active">Home</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="{% url 'projects' %}">Projects</a></li>

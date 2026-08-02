@@ -13,12 +13,12 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 load_dotenv(BASE_DIR / 'mw' / '.env')
-
 
 def env_bool(name, default='False'):
     return os.environ.get(name, default).strip().lower() in {'1', 'true', 'yes', 'on'}
@@ -38,7 +38,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-^2tc6vqzl9tjaf6avrd+h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_bool('DEBUG', 'True')
 
-ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost,[::1]')
+if os.getenv('VERCEL'):
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost,[::1]')
 LOGIN_URL = '/admin/login/'
 
 # Email settings for contact form and password reset
@@ -103,13 +106,30 @@ WSGI_APPLICATION = 'mw.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Force SQLite for local development so runserver does not fail when the Supabase host is unreachable.
+# For deployment, you can switch this back to Postgres by setting USE_SUPABASE=True and providing a valid DATABASE_URL.
+USE_SUPABASE = env_bool('USE_SUPABASE', 'False')
+DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
 
+if USE_SUPABASE and DATABASE_URL and DATABASE_URL.startswith('postgres'):
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+SUPABASE_URL = os.getenv('SUPABASE_URL', '')
+SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', os.getenv('SUPABASE_KEY', ''))
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -158,3 +178,6 @@ STATICFILES_DIRS = [BASE_DIR / 'mw' / 'myproject' / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+if os.getenv('VERCEL'):
+    STATIC_ROOT = '/tmp/staticfiles'

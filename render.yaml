@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: rahim-portfolio
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+    startCommand: "gunicorn mw.wsgi:application"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: mw.settings
+      - key: DATABASE_URL
+        value: postgres://postgres:password@host:5432/postgres
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
