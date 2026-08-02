@@ -36,7 +36,7 @@ def env_list(name, default=''):
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-^2tc6vqzl9tjaf6avrd+h8va4t@j^jswn1a84o%-t_!rs#h7=*')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = env_bool('DEBUG', 'True')
 
 if os.getenv('VERCEL'):
     ALLOWED_HOSTS = ['*']
@@ -120,10 +120,13 @@ if USE_SUPABASE and DATABASE_URL and DATABASE_URL.startswith('postgres'):
         )
     }
 else:
+    sqlite_path = BASE_DIR / 'db.sqlite3'
+    if os.getenv('VERCEL'):
+        sqlite_path = '/tmp/db.sqlite3'
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': sqlite_path,
         }
     }
 
