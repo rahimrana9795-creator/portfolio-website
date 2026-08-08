@@ -1,14 +1,16 @@
 import logging
+from datetime import timedelta
 
 from django.conf import settings
 from django.core.mail import EmailMessage
-from django.db import OperationalError
-from django.shortcuts import render, redirect
+from django.db.models import Count
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
+from django.utils import timezone
 
 from .forms import ContactMessageForm
-from .models import ContactMessage, Project, Service, Skill, Experience, SiteContent, Page
+from .models import ContactMessage, Page, PageView, Project, Service, Skill, Experience, SiteContent
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +129,47 @@ def admin_required(user):
 
 @user_passes_test(admin_required, login_url='/admin/login/')
 def dashboard(request):
-    return redirect('admin:index')
+    total_views = PageView.objects.count()
+    unique_visitors = PageView.objects.values('ip_address').distinct().count()
+    total_messages = ContactMessage.objects.count()
+    unread_messages = ContactMessage.objects.filter(is_read=False).count()
+    total_projects = Project.objects.count()
+    featured_projects = Project.objects.filter(is_featured=True).count()
+
+    today = timezone.now().date()
+    views_today = PageView.objects.filter(viewed_at__date=today).count()
+    week_ago = timezone.now() - timedelta(days=7)
+    views_week = PageView.objects.filter(viewed_at__gte=week_ago).count()
+
+    recent_messages = ContactMessage.objects.order_by('-created')[:5]
+    popular_pages = (
+        PageView.objects.values('path')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:5]
+    )
+
+    # Weekly views for the chart (last 7 days)
+    days = []
+    counts = []
+    for offset in range(6, -1, -1):
+        day = today - timedelta(days=offset)
+        days.append(day.strftime('%a'))
+        counts.append(PageView.objects.filter(viewed_at__date=day).count())
+
+    return render(request, 'dashboard.html', {
+        'total_views': total_views,
+        'unique_visitors': unique_visitors,
+        'total_messages': total_messages,
+        'unread_messages': unread_messages,
+        'total_projects': total_projects,
+        'featured_projects': featured_projects,
+        'views_today': views_today,
+        'views_week': views_week,
+        'recent_messages': recent_messages,
+        'popular_pages': popular_pages,
+        'chart_labels': days,
+        'chart_data': counts,
+    })
 
 
 @user_passes_test(admin_required, login_url='/admin/login/')
@@ -156,7 +198,54 @@ def projects(request):
 
 @user_passes_test(admin_required, login_url='/admin/login/')
 def analytics(request):
-    return render(request, 'analytics.html')
+    today = timezone.now().date()
+
+    views_today = PageView.objects.filter(viewed_at__date=today).count()
+    views_week = PageView.objects.filter(
+        viewed_at__gte=timezone.now() - timedelta(days=7)
+    ).count()
+    views_total = PageView.objects.count()
+    unique_visitors = PageView.objects.values('ip_address').distinct().count()
+
+    # Last 14 days for the trend chart
+    days = []
+    counts = []
+    for offset in range(13, -1, -1):
+        day = today - timedelta(days=offset)
+        days.append(day.strftime('%d %b'))
+        counts.append(PageView.objects.filter(viewed_at__date=day).count())
+
+    # Top pages
+    top_pages = (
+        PageView.objects.values('path')
+        .annotate(views=Count('id'))
+        .order_by('-views')[:8]
+    )
+
+    # Views per hour of day (traffic pattern) — bucketed in Python for cross-database safety
+    recent_views = (
+        PageView.objects
+        .filter(viewed_at__gte=timezone.now() - timedelta(days=7))
+        .values_list('viewed_at', flat=True)
+    )
+    hourly_buckets = {}
+    for viewed_at in recent_views.iterator():
+        hour_key = viewed_at.astimezone(timezone.get_current_timezone()).strftime('%H:00')
+        hourly_buckets[hour_key] = hourly_buckets.get(hour_key, 0) + 1
+    hours = [f"{h:02d}:00" for h in range(24)]
+    hourly_counts = [hourly_buckets.get(h, 0) for h in hours]
+
+    return render(request, 'analytics.html', {
+        'views_today': views_today,
+        'views_week': views_week,
+        'views_total': views_total,
+        'unique_visitors': unique_visitors,
+        'chart_labels': days,
+        'chart_data': counts,
+        'top_pages': top_pages,
+        'hourly_labels': hours,
+        'hourly_data': hourly_counts,
+    })
 
 
 def resume(request):
@@ -182,12 +271,58 @@ def messages_page(request):
         messages_list = ContactMessage.objects.order_by('-created')
     except Exception:
         messages_list = []
-    return render(request, 'messages.html', {'messages_list': messages_list})
+    unread_count = ContactMessage.objects.filter(is_read=False).count()
+    read_count = ContactMessage.objects.filter(is_read=True).count()
+    return render(request, 'messages.html', {
+        'messages_list': messages_list,
+        'unread_count': unread_count,
+        'read_count': read_count,
+    })
+
+
+@user_passes_test(admin_required, login_url='/admin/login/')
+def message_mark_read(request, message_id):
+    message = get_object_or_404(ContactMessage, pk=message_id)
+    message.is_read = True
+    message.save(update_fields=['is_read'])
+    return redirect('messages')
+
+
+@user_passes_test(admin_required, login_url='/admin/login/')
+def message_mark_unread(request, message_id):
+    message = get_object_or_404(ContactMessage, pk=message_id)
+    message.is_read = False
+    message.save(update_fields=['is_read'])
+    return redirect('messages')
+
+
+@user_passes_test(admin_required, login_url='/admin/login/')
+def message_delete(request, message_id):
+    message = get_object_or_404(ContactMessage, pk=message_id)
+    message.delete()
+    messages.success(request, 'Message deleted.')
+    return redirect('messages')
+
+
+@user_passes_test(admin_required, login_url='/admin/login/')
+def messages_mark_all_read(request):
+    ContactMessage.objects.filter(is_read=False).update(is_read=True)
+    messages.success(request, 'All messages marked as read.')
+    return redirect('messages')
 
 
 @user_passes_test(admin_required, login_url='/admin/login/')
 def settings_page(request):
-    return render(request, 'settings.html')
+    stats = {
+        'projects': Project.objects.count(),
+        'messages': ContactMessage.objects.count(),
+        'pages': Page.objects.count(),
+        'views': PageView.objects.count(),
+    }
+    return render(request, 'settings.html', {
+        'stats': stats,
+        'site_content': get_site_content(),
+    })
 
 
 def page_detail(request, url_path):

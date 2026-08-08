@@ -4,61 +4,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messages | MyWebsite</title>
+    <title>Messages | {{ request.user.username|default:"Admin" }}</title>
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 <body>
-<div class="sidebar">
+<aside class="sidebar">
     <a class="site-logo" href="{% url 'home' %}" aria-label="Rahim's Portfolio home"><img src="{% static 'images/code-with-rahim-logo.png' %}" alt="Code With Rahim"></a>
+    <div class="sidebar-user">
+        <img src="{% static 'images/rahim-profile.jpg' %}" alt="Profile">
+        <div>
+            <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+            <span>Administrator</span>
+        </div>
+    </div>
     <ul>
-        <li><a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{% url 'dashboard' %}"><i class="fas fa-th-large"></i> Dashboard</a></li>
         <li><a href="{% url 'profile' %}"><i class="fas fa-user"></i> Profile</a></li>
-        <li><a href="{% url 'projects' %}"><i class="fas fa-briefcase"></i> Projects</a></li>
         <li><a href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a></li>
-        <li class="active"><a href="{% url 'messages' %}"><i class="fas fa-envelope"></i> Messages</a></li>
+        <li class="active">
+            <a href="{% url 'messages' %}">
+                <i class="fas fa-envelope"></i> Messages
+                {% if unread_count %}<span class="badge">{{ unread_count }}</span>{% endif %}
+            </a>
+        </li>
         <li><a href="{% url 'settings' %}"><i class="fas fa-cog"></i> Settings</a></li>
         <li><a href="{% url 'admin:index' %}"><i class="fas fa-shield-alt"></i> Admin Panel</a></li>
     </ul>
-</div>
-
-<div class="main">
-    <div class="search-box">
-        <input type="text" placeholder="Search...">
-        <i class="fas fa-search"></i>
+    <div class="sidebar-footer">
+        <a href="{% url 'home' %}" class="view-site"><i class="fas fa-globe"></i> View Site</a>
     </div>
+</aside>
+
+<main class="main">
     <header>
-        <h1>Messages</h1>
-        <div class="user">
-            <img src="{% static 'images/rahim-profile.jpg' %}" alt="Portrait of Rahim">
-            <span>Contact inbox</span>
+        <div class="header-titles">
+            <p class="greeting" id="greeting">Good Morning</p>
+            <h1>Messages</h1>
+        </div>
+        <div class="header-actions">
+            <span id="liveDate"></span>
+            <div class="search-box">
+                <input type="text" id="messageSearch" placeholder="Search messages...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="user">
+                <img src="{% static 'images/rahim-profile.jpg' %}" alt="User avatar">
+                <span>{{ request.user.username }}</span>
+            </div>
         </div>
     </header>
 
-    <section class="cards">
-        <div class="card"><h2>{{ messages_list|length }}</h2><p>Total saved messages</p></div>
-        <div class="card"><h2>Email ready</h2><p>Every submitted form is saved here and sent to your inbox.</p></div>
+    {% if messages %}
+        <div class="django-messages">
+            {% for msg in messages %}
+                <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <section class="stat-grid compact">
+        <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="fas fa-inbox"></i></div>
+            <div>
+                <p class="stat-label">Total Messages</p>
+                <h2 class="counter" data-target="{{ messages_list|length }}">{{ messages_list|length }}</h2>
+            </div>
+        </div>
+        <div class="stat-card stat-orange">
+            <div class="stat-icon"><i class="fas fa-envelope-circle-check"></i></div>
+            <div>
+                <p class="stat-label">Unread</p>
+                <h2 class="counter" data-target="{{ unread_count }}">{{ unread_count }}</h2>
+            </div>
+        </div>
+        <div class="stat-card stat-green">
+            <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+            <div>
+                <p class="stat-label">Read</p>
+                <h2 class="counter" data-target="{{ read_count }}">{{ read_count }}</h2>
+            </div>
+        </div>
+        <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="fas fa-paper-plane"></i></div>
+            <div>
+                <p class="stat-label">Email Ready</p>
+                <h2 class="counter" data-target="0">24/7</h2>
+            </div>
+        </div>
     </section>
 
-    <section class="table-section">
-        <h2>Recent contact requests</h2>
-        <table>
-            <thead><tr><th>Sender</th><th>Email</th><th>Subject</th><th>Date</th></tr></thead>
-            <tbody>
-                {% for message in messages_list %}
+    <section class="panel table-panel">
+        <div class="panel-header">
+            <h2><i class="fas fa-list"></i> Contact Requests</h2>
+            <a href="{% url 'messages_mark_all_read' %}" class="btn btn-soft"><i class="fas fa-check-double"></i> Mark all read</a>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <td>{{ message.name }}</td>
-                        <td>{{ message.email }}</td>
-                        <td>{{ message.subject }}</td>
-                        <td>{{ message.created }}</td>
+                        <th>Status</th>
+                        <th>Sender</th>
+                        <th>Email</th>
+                        <th>Subject</th>
+                        <th>Message</th>
+                        <th>Date</th>
+                        <th class="actions-col">Actions</th>
                     </tr>
-                {% empty %}
-                    <tr><td colspan="4">No contact messages yet.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for message in messages_list %}
+                        <tr class="{% if not message.is_read %}row-unread{% endif %}">
+                            <td>
+                                {% if message.is_read %}
+                                    <span class="status-dot read" title="Read"></span>
+                                {% else %}
+                                    <span class="status-dot unread" title="Unread"></span>
+                                {% endif %}
+                            </td>
+                            <td class="sender-cell">
+                                <span class="avatar-sm">{{ message.name|first|upper }}</span>
+                                <strong>{{ message.name }}</strong>
+                            </td>
+                            <td><a class="email-link" href="mailto:{{ message.email }}">{{ message.email }}</a></td>
+                            <td>{{ message.subject }}</td>
+                            <td class="msg-preview" title="{{ message.message }}">{{ message.message|truncatechars:60 }}</td>
+                            <td class="date-cell">{{ message.created|date:"M d, Y H:i" }}</td>
+                            <td class="actions-col">
+                                <div class="row-actions">
+                                    {% if message.is_read %}
+                                        <a class="icon-btn" title="Mark as unread" href="{% url 'message_mark_unread' message.id %}"><i class="fas fa-envelope"></i></a>
+                                    {% else %}
+                                        <a class="icon-btn" title="Mark as read" href="{% url 'message_mark_read' message.id %}"><i class="fas fa-envelope-open-text"></i></a>
+                                    {% endif %}
+                                    <a class="icon-btn danger" title="Delete" href="{% url 'message_delete' message.id %}" onclick="return confirm('Delete this message?');"><i class="fas fa-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="7" class="empty-state">No contact messages yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </section>
-</div>
+</main>
 
 <script src="{% static 'css/js/dashboard.js' %}"></script>
 </body>

@@ -1,0 +1,161 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | {{ request.user.username|default:"Admin" }}</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<aside class="sidebar">
+    <a class="site-logo" href="{% url 'home' %}" aria-label="Rahim's Portfolio home"><img src="{% static 'images/code-with-rahim-logo.png' %}" alt="Code With Rahim"></a>
+    <div class="sidebar-user">
+        <img src="{% static 'images/rahim-profile.jpg' %}" alt="Profile">
+        <div>
+            <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+            <span>Administrator</span>
+        </div>
+    </div>
+    <ul>
+        <li class="active"><a href="{% url 'dashboard' %}"><i class="fas fa-th-large"></i> Dashboard</a></li>
+        <li><a href="{% url 'profile' %}"><i class="fas fa-user"></i> Profile</a></li>
+        <li><a href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a></li>
+        <li>
+            <a href="{% url 'messages' %}">
+                <i class="fas fa-envelope"></i> Messages
+                {% if unread_messages %}<span class="badge">{{ unread_messages }}</span>{% endif %}
+            </a>
+        </li>
+        <li><a href="{% url 'settings' %}"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="{% url 'admin:index' %}"><i class="fas fa-shield-alt"></i> Admin Panel</a></li>
+    </ul>
+    <div class="sidebar-footer">
+        <a href="{% url 'home' %}" class="view-site"><i class="fas fa-globe"></i> View Site</a>
+    </div>
+</aside>
+
+<main class="main">
+    <header>
+        <div class="header-titles">
+            <p class="greeting" id="greeting">Good Morning</p>
+            <h1>Dashboard Overview</h1>
+        </div>
+        <div class="header-actions">
+            <span id="liveDate"></span>
+            <div class="search-box">
+                <input type="text" id="globalSearch" placeholder="Search...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="user">
+                <img src="{% static 'images/rahim-profile.jpg' %}" alt="User avatar">
+                <span>{{ request.user.username }}</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="stat-grid">
+        <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="fas fa-eye"></i></div>
+            <div>
+                <p class="stat-label">Total Views</p>
+                <h2 class="counter" data-target="{{ total_views }}">{{ total_views }}</h2>
+                <span class="stat-sub">{{ views_today }} today</span>
+            </div>
+        </div>
+        <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div>
+                <p class="stat-label">Unique Visitors</p>
+                <h2 class="counter" data-target="{{ unique_visitors }}">{{ unique_visitors }}</h2>
+                <span class="stat-sub">{{ views_week }} this week</span>
+            </div>
+        </div>
+        <div class="stat-card stat-green">
+            <div class="stat-icon"><i class="fas fa-envelope-open-text"></i></div>
+            <div>
+                <p class="stat-label">Messages</p>
+                <h2 class="counter" data-target="{{ total_messages }}">{{ total_messages }}</h2>
+                <span class="stat-sub">{{ unread_messages }} unread</span>
+            </div>
+        </div>
+        <div class="stat-card stat-orange">
+            <div class="stat-icon"><i class="fas fa-briefcase"></i></div>
+            <div>
+                <p class="stat-label">Projects</p>
+                <h2 class="counter" data-target="{{ total_projects }}">{{ total_projects }}</h2>
+                <span class="stat-sub">{{ featured_projects }} featured</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="charts-row">
+        <div class="panel chart-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-chart-area"></i> Weekly Views</h2>
+                <span class="pill">{{ views_week }} views</span>
+            </div>
+            <canvas id="weeklyChart" height="260"></canvas>
+        </div>
+        <div class="panel pages-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-fire"></i> Popular Pages</h2>
+            </div>
+            <ul class="rank-list">
+                {% for page in popular_pages %}
+                    <li>
+                        <span class="rank">{{ forloop.counter }}</span>
+                        <span class="rank-path">{{ page.path }}</span>
+                        <span class="rank-count">{{ page.count }}</span>
+                    </li>
+                {% empty %}
+                    <li class="empty-state">No page views yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+
+    <section class="lower-row">
+        <div class="panel recent-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-inbox"></i> Recent Messages</h2>
+                <a href="{% url 'messages' %}" class="link-all">View all <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <ul class="message-list">
+                {% for msg in recent_messages %}
+                    <li class="{% if not msg.is_read %}unread{% endif %}">
+                        <div class="msg-avatar">{{ msg.name|first|upper }}</div>
+                        <div class="msg-body">
+                            <strong>{{ msg.name }}</strong>
+                            <span>{{ msg.subject }}</span>
+                        </div>
+                        <time>{{ msg.created|date:"M d" }}</time>
+                    </li>
+                {% empty %}
+                    <li class="empty-state">No messages yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="panel quick-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+            </div>
+            <div class="quick-actions">
+                <a href="{% url 'admin:myproject_project_add' %}" class="quick-btn"><i class="fas fa-plus"></i> Add Project</a>
+                <a href="{% url 'admin:myproject_service_add' %}" class="quick-btn"><i class="fas fa-cogs"></i> New Service</a>
+                <a href="{% url 'admin:myproject_page_add' %}" class="quick-btn"><i class="fas fa-file-alt"></i> New Page</a>
+                <a href="{% url 'admin:index' %}" class="quick-btn"><i class="fas fa-tasks"></i> Manage Content</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    const weeklyLabels = {{ chart_labels|safe }};
+    const weeklyData = {{ chart_data|safe }};
+</script>
+<script src="{% static 'css/js/dashboard.js' %}"></script>
+</body>
+</html>

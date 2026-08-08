@@ -1,6 +1,6 @@
 ﻿from django.contrib import admin
 
-from .models import ContactMessage, Experience, Page, Project, Service, Skill, SiteContent
+from .models import ContactMessage, Experience, Page, PageView, Project, Service, Skill, SiteContent
 
 
 @admin.register(Project)
@@ -46,11 +46,22 @@ class PageAdmin(admin.ModelAdmin):
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'subject', 'created')
-    list_filter = ('created',)
+    list_display = ('name', 'email', 'subject', 'is_read', 'created')
+    list_filter = ('is_read', 'created')
+    list_editable = ('is_read',)
     search_fields = ('name', 'email', 'subject', 'message')
     readonly_fields = ('name', 'email', 'subject', 'message', 'created')
     ordering = ('-created',)
+
+
+@admin.register(PageView)
+class PageViewAdmin(admin.ModelAdmin):
+    list_display = ('path', 'ip_address', 'viewed_at')
+    list_filter = ('viewed_at',)
+    search_fields = ('path', 'ip_address', 'user_agent')
+    readonly_fields = ('path', 'ip_address', 'user_agent', 'viewed_at')
+    ordering = ('-viewed_at',)
+    date_hierarchy = 'viewed_at'
 
 
 @admin.register(SiteContent)

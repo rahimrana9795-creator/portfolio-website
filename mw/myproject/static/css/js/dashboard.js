@@ -1,85 +1,182 @@
 /* ==========================================
-   DASHBOARD JAVASCRIPT
+   NEXT-LEVEL DASHBOARD JAVASCRIPT
 ========================================== */
 
-const counterCards = document.querySelectorAll(".card h2");
+/* ---------- Live clock ---------- */
+const dateBox = document.getElementById("liveDate");
+if (dateBox) {
+    function updateClock() {
+        dateBox.textContent = new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+}
 
-counterCards.forEach(counter => {
-    const target = parseInt(counter.innerText.replace(/[^0-9]/g, ""), 10);
+/* ---------- Greeting ---------- */
+const greeting = document.getElementById("greeting");
+if (greeting) {
+    const hour = new Date().getHours();
+    let text = "Good Evening";
+    if (hour < 12) text = "Good Morning";
+    else if (hour < 18) text = "Good Afternoon";
+    greeting.textContent = text;
+}
+
+/* ---------- Animated counters ---------- */
+const counters = document.querySelectorAll(".counter");
+counters.forEach((counter) => {
+    const target = parseInt(counter.getAttribute("data-target"), 10);
     if (Number.isNaN(target)) return;
 
-    let count = 0;
-    const speed = Math.max(1, Math.ceil(target / 100));
+    let current = 0;
+    const duration = 1200;
+    const startTime = performance.now();
 
-    function updateCounter() {
-        if (count < target) {
-            count += speed;
-            if (count > target) count = target;
-            counter.innerText = count.toLocaleString();
-            requestAnimationFrame(updateCounter);
-        }
+    function tick(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        current = Math.floor(eased * target);
+        counter.textContent = current.toLocaleString();
+        if (progress < 1) requestAnimationFrame(tick);
+        else counter.textContent = target.toLocaleString();
     }
-
-    updateCounter();
+    requestAnimationFrame(tick);
 });
 
-const header = document.querySelector("header");
+/* ---------- Chart.js rendering ---------- */
+function renderChart(canvasId, config) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || typeof Chart === "undefined") return;
+    new Chart(canvas.getContext("2d"), config);
+}
 
-if (header) {
-    const dateBox = document.createElement("div");
-    dateBox.id = "liveDate";
-    header.appendChild(dateBox);
+function areaChartConfig(labels, data, color) {
+    return {
+        type: "line",
+        data: {
+            labels,
+            datasets: [{
+                data,
+                borderColor: color,
+                backgroundColor: color + "22",
+                fill: true,
+                tension: 0.45,
+                borderWidth: 3,
+                pointBackgroundColor: color,
+                pointBorderColor: "#fff",
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 7,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: "#0f172a",
+                    padding: 12,
+                    cornerRadius: 10,
+                    titleFont: { weight: "700" },
+                    displayColors: false,
+                },
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: "#94a3b8", font: { size: 12 } },
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: "#f1f5f9" },
+                    border: { display: false },
+                    ticks: {
+                        color: "#94a3b8",
+                        font: { size: 12 },
+                        precision: 0,
+                    },
+                },
+            },
+        },
+    };
+}
 
-    function updateClock() {
-        const now = new Date();
-        dateBox.innerHTML = now.toLocaleString();
+window.addEventListener("load", () => {
+    if (typeof weeklyLabels !== "undefined" && typeof weeklyData !== "undefined") {
+        renderChart("weeklyChart", areaChartConfig(weeklyLabels, weeklyData, "#6366f1"));
     }
+    if (typeof trafficLabels !== "undefined" && typeof trafficData !== "undefined") {
+        renderChart("trafficChart", areaChartConfig(trafficLabels, trafficData, "#8b5cf6"));
+    }
+    if (typeof hourlyLabels !== "undefined" && typeof hourlyData !== "undefined") {
+        renderChart("hourlyChart", {
+            type: "bar",
+            data: {
+                labels: hourlyLabels,
+                datasets: [{
+                    data: hourlyData,
+                    backgroundColor: "#6366f1cc",
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: "#0f172a",
+                        padding: 12,
+                        cornerRadius: 10,
+                        displayColors: false,
+                    },
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: "#94a3b8", font: { size: 10 }, maxRotation: 0 },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: "#f1f5f9" },
+                        border: { display: false },
+                        ticks: { color: "#94a3b8", precision: 0 },
+                    },
+                },
+            },
+        });
+    }
+});
 
-    setInterval(updateClock, 1000);
-    updateClock();
-}
-
-const hour = new Date().getHours();
-let greeting = "";
-
-if (hour < 12) {
-    greeting = "Good Morning";
-} else if (hour < 18) {
-    greeting = "Good Afternoon";
-} else {
-    greeting = "Good Evening";
-}
-
-const title = document.querySelector("header h1");
-if (title) {
-    title.innerHTML = greeting;
-}
-
-document.querySelectorAll(".card").forEach(card => {
-    card.addEventListener("mouseenter", () => {
-        card.style.transform = "translateY(-10px) scale(1.03)";
+/* ---------- Search: filter table rows / message list ---------- */
+const searchInput = document.getElementById("globalSearch") || document.getElementById("messageSearch");
+if (searchInput) {
+    searchInput.addEventListener("input", () => {
+        const term = searchInput.value.toLowerCase().trim();
+        document.querySelectorAll(".data-table tbody tr, .message-list li").forEach((row) => {
+            row.style.display = row.textContent.toLowerCase().includes(term) ? "" : "none";
+        });
     });
+}
 
-    card.addEventListener("mouseleave", () => {
-        card.style.transform = "translateY(0) scale(1)";
-    });
-});
-
-document.querySelectorAll("tbody tr").forEach((row, index) => {
-    row.style.opacity = "0";
-    row.style.transform = "translateX(-30px)";
-
-    setTimeout(() => {
-        row.style.transition = ".5s";
-        row.style.opacity = "1";
-        row.style.transform = "translateX(0)";
-    }, index * 150);
-});
-
-window.setTimeout(() => {
-    if (window.innerWidth > 768) {
-        alert("Welcome to your Dashboard!");
+/* ---------- Sidebar active state from URL ---------- */
+document.querySelectorAll(".sidebar ul li a").forEach((link) => {
+    const href = link.getAttribute("href");
+    if (!href || href === "/" || href === "#") return;
+    const current = window.location.pathname.replace(/\/$/, "");
+    const linkPath = href.replace(/\/$/, "");
+    if (current === linkPath || current.startsWith(linkPath + "/")) {
+        link.closest("li").classList.add("active");
     }
-}, 800);
+});
 
 console.log("Dashboard Loaded Successfully!");

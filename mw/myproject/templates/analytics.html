@@ -4,52 +4,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics | MyWebsite</title>
+    <title>Analytics | {{ request.user.username|default:"Admin" }}</title>
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<div class="sidebar">
+<aside class="sidebar">
     <a class="site-logo" href="{% url 'home' %}" aria-label="Rahim's Portfolio home"><img src="{% static 'images/code-with-rahim-logo.png' %}" alt="Code With Rahim"></a>
+    <div class="sidebar-user">
+        <img src="{% static 'images/rahim-profile.jpg' %}" alt="Profile">
+        <div>
+            <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+            <span>Administrator</span>
+        </div>
+    </div>
     <ul>
-        <li><a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="{% url 'dashboard' %}"><i class="fas fa-th-large"></i> Dashboard</a></li>
         <li><a href="{% url 'profile' %}"><i class="fas fa-user"></i> Profile</a></li>
         <li class="active"><a href="{% url 'analytics' %}"><i class="fas fa-chart-line"></i> Analytics</a></li>
         <li><a href="{% url 'messages' %}"><i class="fas fa-envelope"></i> Messages</a></li>
         <li><a href="{% url 'settings' %}"><i class="fas fa-cog"></i> Settings</a></li>
         <li><a href="{% url 'admin:index' %}"><i class="fas fa-shield-alt"></i> Admin Panel</a></li>
     </ul>
-</div>
-<div class="main">
-    <div class="search-box">
-        <input type="text" placeholder="Search...">
-        <i class="fas fa-search"></i>
+    <div class="sidebar-footer">
+        <a href="{% url 'home' %}" class="view-site"><i class="fas fa-globe"></i> View Site</a>
     </div>
+</aside>
+
+<main class="main">
     <header>
-        <h1>Analytics</h1>
-        <div class="user">
-            <img src="https://i.pravatar.cc/100" alt="User avatar">
-            <span>Welcome, User</span>
+        <div class="header-titles">
+            <p class="greeting" id="greeting">Good Morning</p>
+            <h1>Analytics</h1>
+        </div>
+        <div class="header-actions">
+            <span id="liveDate"></span>
+            <div class="search-box">
+                <input type="text" id="globalSearch" placeholder="Search...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="user">
+                <img src="{% static 'images/rahim-profile.jpg' %}" alt="User avatar">
+                <span>{{ request.user.username }}</span>
+            </div>
         </div>
     </header>
-    <section class="cards">
-        <div class="card"><h2>Traffic</h2><p>See trends in visits and engagement.</p></div>
-        <div class="card"><h2>Conversion</h2><p>Measure how users are interacting with your dashboard.</p></div>
-        <div class="card"><h2>Revenue</h2><p>Track revenue growth and financial metrics.</p></div>
+
+    <section class="stat-grid">
+        <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="fas fa-eye"></i></div>
+            <div>
+                <p class="stat-label">Views Today</p>
+                <h2 class="counter" data-target="{{ views_today }}">{{ views_today }}</h2>
+            </div>
+        </div>
+        <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="fas fa-calendar-week"></i></div>
+            <div>
+                <p class="stat-label">This Week</p>
+                <h2 class="counter" data-target="{{ views_week }}">{{ views_week }}</h2>
+            </div>
+        </div>
+        <div class="stat-card stat-green">
+            <div class="stat-icon"><i class="fas fa-chart-simple"></i></div>
+            <div>
+                <p class="stat-label">Total Views</p>
+                <h2 class="counter" data-target="{{ views_total }}">{{ views_total }}</h2>
+            </div>
+        </div>
+        <div class="stat-card stat-orange">
+            <div class="stat-icon"><i class="fas fa-user-astronaut"></i></div>
+            <div>
+                <p class="stat-label">Unique Visitors</p>
+                <h2 class="counter" data-target="{{ unique_visitors }}">{{ unique_visitors }}</h2>
+            </div>
+        </div>
     </section>
-    <section class="table-section">
-        <h2>Weekly analytics</h2>
-        <table>
-            <thead><tr><th>Metric</th><th>Value</th></tr></thead>
-            <tbody>
-                <tr><td>Page Views</td><td>12,340</td></tr>
-                <tr><td>New Users</td><td>750</td></tr>
-                <tr><td>Engagement</td><td>68%</td></tr>
-                <tr><td>Revenue</td><td>$9,500</td></tr>
-            </tbody>
-        </table>
+
+    <section class="charts-row">
+        <div class="panel chart-panel chart-wide">
+            <div class="panel-header">
+                <h2><i class="fas fa-chart-area"></i> Traffic — Last 14 Days</h2>
+            </div>
+            <canvas id="trafficChart" height="280"></canvas>
+        </div>
     </section>
-</div>
+
+    <section class="charts-row">
+        <div class="panel chart-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-clock"></i> Busiest Hours</h2>
+            </div>
+            <canvas id="hourlyChart" height="260"></canvas>
+        </div>
+        <div class="panel pages-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-ranking-star"></i> Top Pages</h2>
+            </div>
+            <ul class="rank-list">
+                {% for page in top_pages %}
+                    <li>
+                        <span class="rank">{{ forloop.counter }}</span>
+                        <span class="rank-path" title="{{ page.path }}">{{ page.path }}</span>
+                        <span class="rank-count">{{ page.views }}</span>
+                    </li>
+                {% empty %}
+                    <li class="empty-state">No page views yet. Visit the site to start collecting data.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+</main>
+
+<script>
+    const trafficLabels = {{ chart_labels|safe }};
+    const trafficData = {{ chart_data|safe }};
+    const hourlyLabels = {{ hourly_labels|safe }};
+    const hourlyData = {{ hourly_data|safe }};
+</script>
 <script src="{% static 'css/js/dashboard.js' %}"></script>
 </body>
 </html>

@@ -110,6 +110,7 @@ class ContactMessage(models.Model):
     email = models.EmailField()
     subject = models.CharField(max_length=200)
     message = models.TextField()
+    is_read = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -150,3 +151,18 @@ class SiteContent(models.Model):
 
     def __str__(self):
         return self.site_name
+
+
+class PageView(models.Model):
+    path = models.CharField(max_length=500)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-viewed_at']
+        verbose_name = 'Page View'
+        verbose_name_plural = 'Page Views'
+
+    def __str__(self):
+        return f"{self.path} @ {self.viewed_at}"

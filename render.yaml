@@ -2,19 +2,33 @@ services:
   - type: web
     name: rahim-portfolio
     env: python
+    pythonVersion: 3.13.0
     plan: free
     buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
-    startCommand: "gunicorn mw.wsgi:application"
+    startCommand: "python manage.py migrate --noinput && gunicorn mw.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    healthCheckPath: /
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: mw.settings
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: RENDER
+        value: "true"
       - key: USE_POSTGRES
         value: "True"
       - key: DATABASE_URL
-        value: postgresql://postgres:password@host:5432/postgres
+        fromDatabase:
+          name: rahim-portfolio-db
+          property: connectionString
       - key: DB_SSLMODE
         value: require
-      - key: SECRET_KEY
-        generateValue: true
-      - key: DEBUG
-        value: "False"
+      - key: CONTACT_EMAIL
+        value: ""
+
+databases:
+  - name: rahim-portfolio-db
+    plan: free
+    databaseName: portfolio
+    user: portfolio

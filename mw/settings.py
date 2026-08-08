@@ -38,7 +38,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-^2tc6vqzl9tjaf6avrd+h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_bool('DEBUG', 'True')
 
-if os.getenv('VERCEL'):
+if os.getenv('VERCEL') or os.getenv('RENDER'):
     ALLOWED_HOSTS = ['*']
 else:
     ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost,[::1]')
@@ -81,6 +81,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'mw.myproject.middleware.PageViewMiddleware',
 ]
 
 ROOT_URLCONF = 'mw.urls'
@@ -109,27 +110,38 @@ WSGI_APPLICATION = 'mw.wsgi.application'
 USE_POSTGRES = env_bool('USE_POSTGRES', 'True' if os.getenv('DATABASE_URL') or os.getenv('DB_HOST') else 'False')
 DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
 DB_SSLMODE = os.getenv('DB_SSLMODE', 'disable').strip().lower()
+_DB_CONN_MAX_AGE = int(os.getenv('DB_CONN_MAX_AGE', 600))
+_DB_CONN_HEALTH_CHECKS = env_bool('DB_CONN_HEALTH_CHECKS', 'True')
+_DB_DISABLE_SERVER_SIDE_CURSORS = env_bool('DB_DISABLE_SERVER_SIDE_CURSORS', 'True' if os.getenv('VERCEL') else 'False')
+_DB_CONNECT_TIMEOUT = int(os.getenv('DB_CONNECT_TIMEOUT', 10))
 
 if DATABASE_URL and DATABASE_URL.startswith(('postgres://', 'postgresql://')):
     ssl_require = DB_SSLMODE in {'require', 'true', '1', 'yes', 'on'}
     DATABASES = {
         'default': dj_database_url.parse(
             DATABASE_URL,
-            conn_max_age=600,
+            conn_max_age=_DB_CONN_MAX_AGE,
+            conn_health_checks=_DB_CONN_HEALTH_CHECKS,
+            disable_server_side_cursors=_DB_DISABLE_SERVER_SIDE_CURSORS,
             ssl_require=ssl_require,
         )
     }
+    DATABASES['default'].setdefault('OPTIONS', {})['connect_timeout'] = _DB_CONNECT_TIMEOUT
 elif USE_POSTGRES:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.getenv('DB_NAME', 'portfolio_db'),
             'USER': os.getenv('DB_USER', 'postgres'),
-            'PASSWORD': os.getenv('DB_PASSWORD', '0099'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
             'HOST': os.getenv('DB_HOST', 'localhost'),
             'PORT': os.getenv('DB_PORT', '5432'),
+            'CONN_MAX_AGE': _DB_CONN_MAX_AGE,
+            'CONN_HEALTH_CHECKS': _DB_CONN_HEALTH_CHECKS,
+            'DISABLE_SERVER_SIDE_CURSORS': _DB_DISABLE_SERVER_SIDE_CURSORS,
             'OPTIONS': {
                 'sslmode': DB_SSLMODE,
+                'connect_timeout': _DB_CONNECT_TIMEOUT,
             },
         }
     }
