@@ -29,6 +29,9 @@ def env_list(name, default=''):
     return [item.strip() for item in value.split(',') if item.strip()]
 
 
+IS_VERCEL = env_bool('DJANGO_ON_VERCEL') or bool(os.getenv('VERCEL'))
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -39,10 +42,10 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env_bool('DEBUG', 'False' if os.getenv('VERCEL') else 'True')
+DEBUG = env_bool('DEBUG', 'False' if IS_VERCEL else 'True')
 
 ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost,.vercel.app')
-if os.getenv('VERCEL'):
+if IS_VERCEL:
     ALLOWED_HOSTS.append('.vercel.app')
     if vercel_url := os.getenv('VERCEL_URL'):
         ALLOWED_HOSTS.append(vercel_url)
@@ -119,7 +122,7 @@ sqlite_database_path = BASE_DIR / 'db.sqlite3'
 # At runtime we copy that seed database into Vercel's writable /tmp directory
 # so normal requests can read and write without a read-only-filesystem crash.
 # The /tmp copy is intentionally temporary and can be reset on a cold start.
-if os.getenv('VERCEL') and not os.getenv('VERCEL_SQLITE_BUILD') and os.name != 'nt':
+if IS_VERCEL and not os.getenv('VERCEL_SQLITE_BUILD') and os.name != 'nt':
     writable_sqlite_path = Path('/tmp/db.sqlite3')
     if not writable_sqlite_path.exists() and sqlite_database_path.exists():
         shutil.copy2(sqlite_database_path, writable_sqlite_path)
