@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+import shutil
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -32,12 +33,15 @@ def env_list(name, default=''):
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-^2tc6vqzl9tjaf6avrd+h8va4t@j^jswn1a84o%-t_!rs#h7=*')
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    os.environ.get('SECRET_KEY', 'django-insecure-^2tc6vqzl9tjaf6avrd+h8va4t@j^jswn1a84o%-t_!rs#h7=*'),
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_bool('DEBUG', 'False' if os.getenv('VERCEL') else 'True')
 
-ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost')
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost,.vercel.app')
 if os.getenv('VERCEL'):
     ALLOWED_HOSTS.append('.vercel.app')
     if vercel_url := os.getenv('VERCEL_URL'):
@@ -108,10 +112,23 @@ WSGI_APPLICATION = 'mw.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+sqlite_database_path = BASE_DIR / 'db.sqlite3'
+
+# Vercel functions have a read-only project filesystem.  During the build,
+# ``vercel.json`` creates a migrated SQLite database at the project root.
+# At runtime we copy that seed database into Vercel's writable /tmp directory
+# so normal requests can read and write without a read-only-filesystem crash.
+# The /tmp copy is intentionally temporary and can be reset on a cold start.
+if os.getenv('VERCEL') and not os.getenv('VERCEL_SQLITE_BUILD') and os.name != 'nt':
+    writable_sqlite_path = Path('/tmp/db.sqlite3')
+    if not writable_sqlite_path.exists() and sqlite_database_path.exists():
+        shutil.copy2(sqlite_database_path, writable_sqlite_path)
+    sqlite_database_path = writable_sqlite_path
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': sqlite_database_path,
     }
 }
 
@@ -162,6 +179,3 @@ STATICFILES_DIRS = [BASE_DIR / 'mw' / 'myproject' / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
-if os.getenv('VERCEL') and os.name != 'nt':
-    STATIC_ROOT = '/tmp/staticfiles'

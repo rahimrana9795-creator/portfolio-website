@@ -10,3 +10,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mw.settings')
 from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
+
+# Vercel's Python runtime looks for an ``app`` WSGI/ASGI export.
+app = application

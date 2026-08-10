@@ -1,6 +1,12 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "buildCommand": "python manage.py collectstatic --noinput",
+  "buildCommand": "VERCEL_SQLITE_BUILD=1 python manage.py migrate --noinput && python manage.py collectstatic --noinput",
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "{db.sqlite3,staticfiles/**}"
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
