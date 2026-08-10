@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,16 +35,13 @@ def env_list(name, default=''):
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-^2tc6vqzl9tjaf6avrd+h8va4t@j^jswn1a84o%-t_!rs#h7=*')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env_bool('DEBUG', 'True')
+DEBUG = env_bool('DEBUG', 'False' if os.getenv('VERCEL') else 'True')
 
-if os.getenv('VERCEL') or os.getenv('RENDER'):
-<<<<<<< HEAD
-    ALLOWED_HOSTS = ['.vercel.app']
-=======
-    ALLOWED_HOSTS = ['.vercel.app' ]
->>>>>>> de4f0c5501d289fbf203ac4b9f88c06618a8c8ea
-else:
-    ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1., [::1]')
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost')
+if os.getenv('VERCEL'):
+    ALLOWED_HOSTS.append('.vercel.app')
+    if vercel_url := os.getenv('VERCEL_URL'):
+        ALLOWED_HOSTS.append(vercel_url)
 LOGIN_URL = '/admin/login/'
 
 # Email settings for contact form and password reset
@@ -112,58 +108,12 @@ WSGI_APPLICATION = 'mw.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-USE_POSTGRES = env_bool('USE_POSTGRES', 'True' if os.getenv('DATABASE_URL') or os.getenv('DB_HOST') else 'False')
-DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
-DB_SSLMODE = os.getenv('DB_SSLMODE', 'disable').strip().lower()
-_DB_CONN_MAX_AGE = int(os.getenv('DB_CONN_MAX_AGE', 600))
-_DB_CONN_HEALTH_CHECKS = env_bool('DB_CONN_HEALTH_CHECKS', 'True')
-_DB_DISABLE_SERVER_SIDE_CURSORS = env_bool('DB_DISABLE_SERVER_SIDE_CURSORS', 'True' if os.getenv('VERCEL') else 'False')
-_DB_CONNECT_TIMEOUT = int(os.getenv('DB_CONNECT_TIMEOUT', 10))
-
-if DATABASE_URL and DATABASE_URL.startswith(('postgres://', 'postgresql://')):
-    ssl_require = DB_SSLMODE in {'require', 'true', '1', 'yes', 'on'}
-    DATABASES = {
-        'default': dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=_DB_CONN_MAX_AGE,
-            conn_health_checks=_DB_CONN_HEALTH_CHECKS,
-            disable_server_side_cursors=_DB_DISABLE_SERVER_SIDE_CURSORS,
-            ssl_require=ssl_require,
-        )
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-    DATABASES['default'].setdefault('OPTIONS', {})['connect_timeout'] = _DB_CONNECT_TIMEOUT
-elif USE_POSTGRES:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'portfolio_db'),
-            'USER': os.getenv('DB_USER', 'postgres'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-            'CONN_MAX_AGE': _DB_CONN_MAX_AGE,
-            'CONN_HEALTH_CHECKS': _DB_CONN_HEALTH_CHECKS,
-            'DISABLE_SERVER_SIDE_CURSORS': _DB_DISABLE_SERVER_SIDE_CURSORS,
-            'OPTIONS': {
-                'sslmode': DB_SSLMODE,
-                'connect_timeout': _DB_CONNECT_TIMEOUT,
-            },
-        }
-    }
-else:
-    sqlite_path = BASE_DIR / 'db.sqlite3'
-    if os.getenv('VERCEL'):
-        sqlite_path = '/tmp/db.sqlite3'
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': sqlite_path,
-        }
-    }
-
-SUPABASE_URL = os.getenv('SUPABASE_URL', '')
-SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', os.getenv('SUPABASE_KEY', ''))
-SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -213,5 +163,5 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-if os.getenv('VERCEL'):
+if os.getenv('VERCEL') and os.name != 'nt':
     STATIC_ROOT = '/tmp/staticfiles'

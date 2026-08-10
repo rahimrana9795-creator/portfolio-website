@@ -1,16 +1,10 @@
 {
-  "builds": [
+  "version": 2,
+  "buildCommand": "python manage.py collectstatic --noinput",
+  "rewrites": [
     {
-      "src": "mw/wsgi.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "15mb","runtime": "python3.11"
-      }
-    }],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "mw/wsgi.py"
+      "source": "/(.*)",
+      "destination": "/api/index.py"
     }
   ]
 }
