@@ -39,9 +39,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-^2tc6vqzl9tjaf6avrd+h
 DEBUG = env_bool('DEBUG', 'True')
 
 if os.getenv('VERCEL') or os.getenv('RENDER'):
-    ALLOWED_HOSTS = ['*']
+    ALLOWED_HOSTS = ['.vercel.app']
 else:
-    ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost,[::1]')
+    ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1., [::1]')
 LOGIN_URL = '/admin/login/'
 
 # Email settings for contact form and password reset
