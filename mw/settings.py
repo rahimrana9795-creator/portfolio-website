@@ -39,7 +39,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-^2tc6vqzl9tjaf6avrd+h
 DEBUG = env_bool('DEBUG', 'True')
 
 if os.getenv('VERCEL') or os.getenv('RENDER'):
+<<<<<<< HEAD
     ALLOWED_HOSTS = ['.vercel.app']
+=======
+    ALLOWED_HOSTS = ['.vercel.app' ]
+>>>>>>> de4f0c5501d289fbf203ac4b9f88c06618a8c8ea
 else:
     ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1., [::1]')
 LOGIN_URL = '/admin/login/'
