@@ -1,103 +1,74 @@
-# Rahim's Portfolio — Django Web App
+# Code With Rahim — Portfolio (Next.js)
 
-Modern portfolio website with a next-level admin dashboard.
+Modern, fully responsive portfolio website built with **Next.js 15**, **TypeScript**,
+**Tailwind CSS**, and **SQLite** (via better-sqlite3). Works on desktop, tablet,
+and mobile out of the box, and deploys to **Vercel directly from GitHub**.
 
 ## Features
 
-- **Portfolio site** — home, projects, resume, profile, dynamic pages
-- **Admin dashboard** (`/dashboard/`) — real stats, weekly views chart, popular pages, recent messages, quick actions
-- **Analytics** (`/analytics/`) — 14-day traffic chart, busiest-hours chart, top pages, unique visitors
-- **Messages inbox** (`/messages/`) — read/unread status, mark read/unread, delete, mark all read
-- **Settings** (`/settings/`) — account info, content management shortcuts, password change, logout
-- **Page-view tracking** — automatic via middleware (admin/static/media excluded)
-- Contact form with email delivery (SMTP or file backend for dev)
+- **Public site** — home (hero, services, featured projects, about, experience timeline, contact form), projects page, resume page, and admin-created dynamic pages
+- **Admin panel** (`/admin`) — dashboard with analytics, projects/services/skills/experience/pages content management, messages inbox, and site settings editor
+- **Contact form** — messages saved to the database; optional email delivery via Resend
+- **Page-view analytics** — lightweight traffic tracking with a weekly views chart
+- **Fully responsive** — mobile-first layouts with a mobile navigation menu
+- **Seeded starter content** — the site looks complete on first run; edit everything from the admin
 
 ## Tech Stack
 
-- Django 6.0.7
-- PostgreSQL (production) / SQLite (dev)
-- Gunicorn (WSGI) — chosen over ASGI because the app is fully synchronous
-- Chart.js (frontend charts)
-- Render (hosting) or Vercel (serverless)
+- Next.js 15 (App Router) + React 19 + TypeScript
+- Tailwind CSS v4
+- better-sqlite3 (SQLite database at `data/site.db`)
+- Font Awesome + Google Fonts (Sora / Inter)
 
 ## Local Development
 
-```bash
-# Windows (PowerShell or CMD)
-webvenv\Scripts\python.exe -X frozen_modules=off manage.py migrate
-webvenv\Scripts\python.exe -X frozen_modules=off manage.py runserver
-```
-
-> Note: Python 3.14 on Windows requires `-X frozen_modules=off` (known CPython 3.14 bug with `ssl`/`asyncio`).
-
-## WSGI vs ASGI — Decision
-
-The app uses **WSGI + Gunicorn** (`mw.wsgi.application`).
-- Gunicorn workers run separate processes (multiprocess), not threads.
-- SQLite is unsupported by Gunicorn in multiprocess mode — production must use PostgreSQL (handled by `render.yaml`).
-
-## Production Deployment — Render
-
-The repo already contains `render.yaml` (Infrastructure-as-Code).
-
-### One-click deploy
-
-1. Push this repo to GitHub (already done): `https://github.com/rahimrana9795-creator/portfolio-website`
-2. Go to [https://dashboard.render.com/blueprints](https://dashboard.render.com/blueprints)
-3. Click **New Blueprint Instance**
-4. Connect the `portfolio-website` GitHub repo
-5. Confirm — Render creates:
-   - Web service `rahim-portfolio` (Gunicorn WSGI, auto-migrate on start)
-   - PostgreSQL database `rahim-portfolio-db`
-6. Auto-deploy starts. The live URL appears in the dashboard, format:
-   `https://rahim-portfolio.onrender.com`
-
-### Manual deploy (alternative)
-
-1. Render Dashboard → **New** → **Web Service**
-2. Connect repo, branch: `portfolio-website`
-3. Build Command:
-   ```
-   pip install -r requirements.txt && python manage.py collectstatic --noinput
-   ```
-4. Start Command:
-   ```
-   python manage.py migrate --noinput && gunicorn mw.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
-   ```
-5. Create a PostgreSQL instance and set env vars:
-   - `DATABASE_URL` = the Postgres connection string
-   - `DB_SSLMODE=require`
-   - `SECRET_KEY` = a random secret
-   - `DEBUG=False`
-   - `RENDER=true` (enables ALLOWED_HOSTS)
-   - `CONTACT_EMAIL` = inbox that receives contact form emails
-
-### Create admin user (after first deploy)
-
-```
-python manage.py createsuperuser
-```
-Run this from the Render **Shell** tab. Then admin at `https://<your-app>.onrender.com/admin/`
-and the custom dashboard at `https://<your-app>.onrender.com/dashboard/`.
-
-## Custom Domain — rahims-portfolio.com
-
-1. Buy the domain at a registrar (Namecheap, Cloudflare, GoDaddy, etc.).
-2. In Render → your Web Service → **Settings** → **Custom Domains** → **Add Custom Domain**.
-3. Enter `rahims-portfolio.com` (and optionally `www.rahims-portfolio.com`).
-4. Render shows DNS records to add at your registrar:
-   - CNAME `www` → `rahim-portfolio.onrender.com` (or the exact target Render gives)
-   - For the bare domain (apex): use ALIAS/ANAME if supported, otherwise redirect www → apex.
-5. Render provisions a Let's Encrypt SSL certificate automatically.
-6. Done — `https://rahims-portfolio.com` is live.
-
-## GitHub Pages — NOT used
-
-A previous branch had a GitHub Pages workflow. That workflow was removed because
-Pages serves only static files and can never run a Django app. Production must use a
-dynamic host: Render (recommended), Railway, or Heroku.
-
-## Tests
+Requires Node.js 20+ (Bun or npm).
 
 ```bash
-webvenv\Scripts\python.exe -X frozen_modules=off manage.py test
+bun install
+bun run dev        # http://localhost:3000
+```
+
+Other scripts: `bun run build` (production build), `bun run start` (serve build),
+`bun run typecheck` (TypeScript check).
+
+### Admin login
+
+The admin password defaults to `admin12345` in development. In production you MUST
+set the `ADMIN_PASSWORD` environment variable — without it the admin login is
+disabled.
+
+## Deploy on Vercel (via GitHub)
+
+1. Push this repository to GitHub.
+2. Go to [vercel.com](https://vercel.com) → **Add New → Project** → import the GitHub repo.
+3. Vercel auto-detects Next.js — the default build (`next build`) works as-is. Click **Deploy**.
+4. Add the environment variables below under **Project → Settings → Environment Variables**.
+
+### Environment variables
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `ADMIN_PASSWORD` | Production | Admin panel password (required in production) |
+| `CONTACT_EMAIL` | Optional | Email address that receives contact form notifications |
+| `RESEND_API_KEY` | Optional | Resend API key — enables email delivery for the contact form |
+| `EMAIL_FROM` | Optional | Sender address for contact emails (default: Resend onboarding) |
+| `SOCIAL_GITHUB` / `SOCIAL_LINKEDIN` / `SOCIAL_TWITTER` / `SOCIAL_INSTAGRAM` / `SOCIAL_FACEBOOK` | Optional | Social profile URLs shown in the footer and contact section |
+
+### Database note
+
+The app stores content in a local SQLite file (`data/site.db`). On Vercel this file
+is created at runtime and is **ephemeral** — it resets on redeploys and cold starts.
+For persistent storage (recommended for production contact messages), the data layer
+can be swapped to PostgreSQL — say the word and this repo can be wired to Neon +
+Prisma while keeping the same pages.
+
+## Project Structure
+
+```
+app/            Next.js App Router pages (public + admin)
+components/     Reusable React components (navbar, footer, forms, admin UI)
+lib/            Data layer (db.ts, site.ts), auth, and email helpers
+data/           SQLite database file (gitignored)
+public/images/  Site images
+```
