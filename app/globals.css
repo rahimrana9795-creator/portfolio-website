@@ -1,0 +1,255 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #070b15;
+  --color-bg-alt: #0a1120;
+  --color-surface: #0e1729;
+  --color-surface-2: #121d33;
+  --color-ink: #e9effb;
+  --color-muted: #94a3b8;
+  --color-accent: #38bdf8;
+  --color-accent-2: #6366f1;
+  --color-good: #34d399;
+  --color-warn: #fbbf24;
+  --color-bad: #f87171;
+
+  --font-head: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-glow: 0 10px 30px rgba(99, 102, 241, 0.35);
+  --shadow-card: 0 24px 60px rgba(1, 4, 12, 0.55);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+section[id] {
+  scroll-margin-top: 90px;
+}
+
+::selection {
+  background: rgba(56, 189, 248, 0.3);
+  color: #fff;
+}
+
+/* ---------- Shared helpers ---------- */
+
+.grad-text {
+  background: linear-gradient(120deg, #22d3ee 0%, #6366f1 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  background: rgba(56, 189, 248, 0.09);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  padding: 7px 16px;
+  border-radius: 999px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 30px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.98rem;
+  font-family: var(--font-body);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(120deg, #22d3ee 0%, #6366f1 100%);
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(99, 102, 241, 0.45);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-ink);
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+.btn-ghost:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: translateY(-3px);
+}
+
+.btn-sm {
+  padding: 10px 20px;
+  font-size: 0.88rem;
+}
+
+/* ---------- Reveal on scroll ---------- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (scripting: none) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Card ---------- */
+
+.card-surface {
+  background: var(--color-surface);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 20px;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-surface:hover {
+  transform: translateY(-6px);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: var(--shadow-card);
+}
+
+/* ---------- Project covers ---------- */
+
+.cover-a { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+.cover-b { background: linear-gradient(135deg, #6366f1, #a855f7); }
+.cover-c { background: linear-gradient(135deg, #06b6d4, #0ea5e9); }
+.cover-d { background: linear-gradient(135deg, #14b8a6, #22d3ee); }
+
+/* ---------- Forms ---------- */
+
+.field {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 12px;
+  background: var(--color-bg);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 0.96rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  resize: vertical;
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.14);
+}
+
+.field::placeholder {
+  color: #5b6b82;
+}
+
+/* ---------- Status badges ---------- */
+
+.status-complete { background: rgba(52, 211, 153, 0.16); color: var(--color-good); border: 1px solid rgba(52, 211, 153, 0.4); }
+.status-progress, .status-inprogress { background: rgba(251, 191, 36, 0.14); color: var(--color-warn); border: 1px solid rgba(251, 191, 36, 0.4); }
+.status-planned { background: rgba(148, 163, 184, 0.16); color: var(--color-muted); border: 1px solid rgba(148, 163, 184, 0.4); }
+
+/* ---------- Timeline ---------- */
+
+.timeline-line {
+  position: relative;
+}
+
+.timeline-line::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.5), rgba(99, 102, 241, 0.12));
+}
+
+/* ---------- Animations ---------- */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+.animate-float {
+  animation: float 7s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float 9s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--color-good);
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+/* ---------- Dynamic page body ---------- */
+
+.page-body h2, .page-body h3 {
+  margin: 26px 0 12px;
+  color: var(--color-ink);
+  font-family: var(--font-head);
+}
+
+.page-body p { margin-bottom: 16px; }
+.page-body ul, .page-body ol { margin: 0 0 16px 22px; list-style: revert; }
+.page-body li { margin-bottom: 8px; }
+.page-body a { color: var(--color-accent); text-decoration: underline; }
+.page-body blockquote {
+  border-left: 3px solid var(--color-accent);
+  padding: 4px 0 4px 18px;
+  margin: 20px 0;
+  color: var(--color-ink);
+  font-style: italic;
+}
+.page-body img { border-radius: 12px; margin: 20px 0; }
+
+/* ---------- Admin tables ---------- */
+
+.table-row-hover tbody tr:hover {
+  background: rgba(148, 163, 184, 0.06);
+}
